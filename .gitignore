@@ -1,0 +1,32 @@
+# Python/Django
+/backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+*.sqlite3
+/backend/.env
+
+# React/Node
+/frontend/node_modules/
+/frontend/.pnp
+/frontend/.pnp.js
+/frontend/yarn.lock
+/frontend/*.log
+/frontend/build/
+
+# Database
+*.sql
+*.dump
+
+# IDE and OS files
+.DS_Store
+*.code-workspace
+.idea/
+.vscode/
+
+# Misc
+*.swp
+*.swo
+*.log
