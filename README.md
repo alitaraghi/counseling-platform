@@ -68,7 +68,8 @@ A full-stack web app for counselors and clients, built with Django (backend), Re
    ```bash
    npm start
    ```
-
+## Diagrams
+[Entity Relationship Diagram](docs/ERD.md)
 ## Database Design
 
 ![ERD](docs/ERD.png)The database includes tables for users, profiles, sessions, and consents. See ERD.md for details.
