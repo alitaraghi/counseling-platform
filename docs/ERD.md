@@ -1,118 +1,74 @@
-# Entity-Relationship Diagram (ERD)
+# Entity Relationship Diagram (ERD)
 
-## Entities
+This document outlines the database structure of the project, consisting of 13 primary tables and their relationships. The ERD is based on the latest agreed-upon design.
+
+## Primary Tables
+
 ### User
-- id (PK)
-- email (Unique)
-- password (Hashed)
-- role (Choices: Counselor/Client/Admin)
-- created_at (DateTime)
-- updated_at (DateTime)
-- is_staff (Boolean, for admin access)
-- is_superuser (Boolean, for super admin)
+- **Fields**: `id (PK)`, `email`, `password`, `role (Counselor/Client/Admin)`, `is_staff`, `is_superuser`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: The main table for users with various roles.
 
 ### CounselorProfile
-- user_id (FK, One-to-One with User)
-- license_number (String)
-- license_doc (FileField, for verification)
-- specialty (String, e.g., "Depression", "Anxiety")
-- bio (Text)
-- verified (Boolean, for Iran/Australia compliance)
+- **Fields**: `id (PK)`, `user_id (FK)`, `license_number`, `license_doc`, `specialty`, `bio`, `verified`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Profile details for counselors, linked to the User table.
 
 ### ClientProfile
-- user_id (FK, One-to-One with User)
-- full_name (String, Encrypted)
-- birth_date (Date, Encrypted)
-- contact_info (Text, Encrypted)
-
-### BlogPost
-- id (PK)
-- counselor_id (FK to User where role='Counselor')
-- title (String)
-- content (Text)
-- video_url (URL, Nullable)
-- is_public (Boolean)
-- created_at (DateTime)
+- **Fields**: `id (PK)`, `user_id (FK)`, `full_name (Encrypted)`, `phone_number`, `ai_summary (Encrypted)`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Profile details for clients, linked to the User table.
 
 ### Course
-- id (PK)
-- counselor_id (FK to User where role='Counselor')
-- title (String)
-- description (Text)
-- created_at (DateTime)
+- **Fields**: `id (PK)`, `counselor_id (FK)`, `title`, `description`, `price`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Information about courses created by counselors.
 
 ### CourseContent
-- id (PK)
-- course_id (FK)
-- type (Choices: Video/Text/Quiz)
-- content (Text or File)
-- order (Integer)
+- **Fields**: `id (PK)`, `course_id (FK)`, `title`, `content`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Content associated with courses.
 
 ### ClientCourseProgress
-- client_id (FK to User where role='Client')
-- course_id (FK)
-- progress (Float, 0-100)
-- badges (JSON, e.g., ["Completed Module 1"])
-
-### ClientFile
-- id (PK)
-- client_id (FK to User where role='Client')
-- counselor_id (FK to User where role='Counselor')
-- summary (Text, Encrypted)
-- diagnoses (JSON, Encrypted)
-- created_at (DateTime)
+- **Fields**: `id (PK)`, `client_id (FK)`, `course_id (FK)`, `progress`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Tracks client progress in courses.
 
 ### Session
-- id (PK)
-- counselor_id (FK to User where role='Counselor')
-- client_id (FK to User where role='Client')
-- date_time (DateTime)
-- status (Choices: Scheduled/Completed/Canceled)
-- payment_status (Choices: Paid/Pending/Refunded)
-- ai_summary (Text, Encrypted, Nullable)
+- **Fields**: `id (PK)`, `client_id (FK)`, `counselor_id (FK)`, `date_time`, `status`, `ai_summary (Encrypted)`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Details of counseling sessions.
 
 ### Payment
-- id (PK)
-- client_id (FK to User where role='Client')
-- session_id (FK, Nullable)
-- course_id (FK, Nullable)
-- amount (Decimal)
-- status (Choices: Completed/Pending/Failed)
-- created_at (DateTime)
+- **Fields**: `id (PK)`, `session_id (FK)`, `course_id (FK, Nullable)`, `amount`, `status`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Payment records for sessions or courses.
 
-### AITriage
-- id (PK)
-- user_id (FK to User)
-- symptoms (JSON)
-- suggestions (Text)
-- created_at (DateTime)
+### BlogPost
+- **Fields**: `id (PK)`, `counselor_id (FK)`, `title`, `content`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Blog posts authored by counselors.
 
 ### ForumPost
-- id (PK)
-- user_id (FK to User)
-- content (Text)
-- is_moderated (Boolean)
-- created_at (DateTime)
+- **Fields**: `id (PK)`, `user_id (FK)`, `parent_post_id (FK, Nullable)`, `title`, `content`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Forum posts with optional parent-child relationships.
+
+### ClientFile
+- **Fields**: `id (PK)`, `client_id (FK)`, `counselor_id (FK)`, `file_path`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Client-related files.
 
 ### Consent
-- id (PK)
-- user_id (FK to User)
-- session_id (FK, Nullable)
-- course_id (FK, Nullable)
-- agreed_at (DateTime)
-- details (Text, e.g., "Consent for session recording")
+- **Fields**: `id (PK)`, `user_id (FK)`, `data_type`, `granted`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: User consent records.
+
+### AITriage
+- **Fields**: `id (PK)`, `user_id (FK)`, `input_data`, `recommendation`, `created_at`, `updated_at`, `is_deleted`.
+- **Description**: Data for the AI triage system, restricted to Admin roles.
 
 ## Relationships
-- User → CounselorProfile/ClientProfile: One-to-One
-- User (role='Counselor') → BlogPost/Course/Session: One-to-Many
-- User (role='Client') → ClientFile/Session/ClientCourseProgress: One-to-Many
-- Course → CourseContent: One-to-Many
-- User (role='Client') + Course → ClientCourseProgress: Many-to-Many
-- Session → Payment: One-to-One
-- User → Consent: One-to-Many
+- **User → CounselorProfile**: 1:1.
+- **User → ClientProfile**: 1:1.
+- **ClientProfile → ClientCourseProgress**: 1:N.
+- **User → AITriage**: 1:N (applies only to `role='Admin'`).
+- **Course → CourseContent**: 1:N.
+- **Course → Payment**: 1:N (Nullable).
+- **Session → Payment**: 1:N.
 
-## Legal Considerations
-- Encrypted fields (e.g., summary, contact_info) for Iran/Australia privacy laws.
-- verified field in CounselorProfile for license checks (Iran: Medical Council; Australia: AHPRA).
-- Consent table for explicit user agreement (Privacy Act 1988, Australia).
-- Soft delete (is_deleted field, not shown) for data removal requests.
+## Diagram
+For a visual representation of the ERD, refer to the image below (to be generated from Draw.io):
+![ERD](ERD.png)
+
+## Notes
+- All tables include standard fields `created_at`, `updated_at`, and `is_deleted` for data management.
+- Relationships are defined with appropriate cardinality (1:1, 1:N).
